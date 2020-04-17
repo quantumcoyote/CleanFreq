@@ -1,5 +1,11 @@
+#
+# Import sys library to use inline input.
+#
 import sys
 
+#
+# Dictionary with element symbols and element numbers.
+#
 element={'1':'H','2':'He','3':'Li','4':'Be','5':'B','6':'C','7':'N','8':'O','9':'F',
 '10':'Ne','11':'Na','12':'Mg','13':'Al','14':'Si','15':'P','16':'S','17':'Cl','18':'Ar','19':'K',
 '20':'Ca','21':'Sc','22':'Ti','23':'V','24':'Cr','25':'Mn','26':'Fe','27':'Co','28':'Ni','29':'Cu',
@@ -13,6 +19,11 @@ element={'1':'H','2':'He','3':'Li','4':'Be','5':'B','6':'C','7':'N','8':'O','9':
 '100':'Fm','101':'Md','102':'No','103':'Lr','104':'Rf','105':'Db','106':'Sg','107':'Bh','108':'Hs','109':'Mt',
 '110':'Ds','111':'Rg','112':'Cn','113':'Nh','114':'Fl','115':'Mc','116':'Lv','117':'Ts','118':'Og'}
 
+#
+# Function that reads the Gaussian output to find :
+#   - Optimized geometry.
+#   - Frequencies.
+#
 def Gaussian():
     global negative
     global col_neg
@@ -20,7 +31,7 @@ def Gaussian():
     global select
 
     #
-    # Initialize Function Variables
+    # Initialize Function Variables.
     #
 
     nline=0
@@ -28,18 +39,19 @@ def Gaussian():
     with open(sys.argv[1], 'r') as searchfile:
         for line in searchfile:
             #
-            # Find the line number before the final geometry is printed
+            # Find the line number before the final geometry is printed.
             #
             if 'Center     Atomic      Atomic             Coordinates (Angstroms)' in line:
                 geo = int(nline)
             #
-            # Find the number of atoms
+            # Find the number of atoms.
             #
             if 'NAtoms=' in line:
                 tmp = line.split()
                 natoms = tmp[1]
             #
-            # Find the frequencies
+            # Find the frequencies and identify in which column the
+            # chosen negative frequency is located.
             #
             if 'Frequencies --' in line:
                 tmp = line.split()
@@ -61,18 +73,23 @@ def Gaussian():
                         negative = negative + 1
                         position_neg=nline
                         col_neg='3'
-
             nline = nline + 1
 
     nline = 1
     with open(sys.argv[1], 'r') as searchfile:
         for line in searchfile:
+            #
+            # Read optimized geometry.
+            #
             if int(geo) + 3 < int(nline) < int(geo) + int(natoms) + 4:
                 tmp = line.split()
                 name.append(element[tmp[1]])
                 x.append(tmp[3])
                 y.append(tmp[4])
                 z.append(tmp[5])
+            #
+            # Read displacement for the selected negative frequency.
+            #
             if int(position_neg)+5 < int(nline) < int(position_neg) + int(natoms) + 6:
                 if col_neg == '1':
                     dx.append(line.split()[2])
@@ -86,14 +103,11 @@ def Gaussian():
                     dx.append(line.split()[8])
                     dy.append(line.split()[9])
                     dz.append(line.split()[10])
-
             nline = nline + 1
 
 #
-# Initialization of Variables
+# Initialization of Variables.
 #
-
-select=1
 frequencies=[]
 negative=0
 nline=1
@@ -106,7 +120,21 @@ dy=[]
 dz=[]
 position_neg=[]
 col_neg=[]
-Gaussian()
+
+#
+# Input of the displacement to apply and the negative frequency to correct.
+#
 disp=float(sys.argv[2])
+select=int(sys.argv[3])
+
+#
+# Execute the function to obtain the optimized geometry and frequencies from
+# the gaussian output.
+#
+Gaussian()
+
+#
+# Print the displaced geometry in the screen.
+#
 for i in range(0,len(name),1):
     print(str(name[i])+' '+str(float(x[i])+(disp*float(dx[i])))+' '+str(float(y[i])+(disp*float(dy[i])))+' '+str(float(z[i])+(disp*float(dz[i]))))
