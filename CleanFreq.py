@@ -24,7 +24,7 @@ element={'1':'H','2':'He','3':'Li','4':'Be','5':'B','6':'C','7':'N','8':'O','9':
 #   - Optimized geometry.
 #   - Frequencies.
 #
-def Gaussian():
+def G16():
     global negative
     global col_neg
     global position_neg
@@ -105,6 +105,116 @@ def Gaussian():
                     dz.append(line.split()[10])
             nline = nline + 1
 
+
+#
+# Function that reads the ADF output to find :
+#   - Optimized geometry.
+#   - Frequencies.
+#
+def ADF():
+    global negative
+    global col_neg
+    global position_neg
+    global select
+    global natoms
+
+    #
+    # Initialize Function Variables.
+    #
+
+    nline=0
+    linefreq=0
+    linefreqstart=0
+    linefreqend=0
+
+    with open(sys.argv[1], 'r') as searchfile:
+        for line in searchfile:
+            #
+            # Find the line number before the final geometry is printed.
+            #
+            if '    Atom         X           Y           Z   (Angstrom)' in line:
+                geo = int(nline)
+            #
+            # Find the line after the final geometry is printed.
+            #
+            if '  >>>> CORORT' in line:
+                natoms = int(nline)
+
+            #
+            # Find the frequencies and identify in which column the
+            # chosen negative frequency is located. (EDIT LATER)
+            #
+            if '                cm-1           1e-40 esu2 cm2          km/mole' in line:
+                linefreq=nline
+
+            if '(a negative value means an imaginary frequency, no output for (almost-)zero frequencies)' in line:
+                linefreqstart=nline
+
+            if 'List of All Frequencies:' in line:
+                linefreqend=nline
+
+
+            nline = nline + 1
+    nline = 1
+    natoms=natoms-geo-1
+
+    with open(sys.argv[1], 'r') as searchfile:
+        for line in searchfile:
+            #
+            # Read the frequencies.
+            #
+            if int(linefreq+2) < int(nline) < int(linefreq+2) +((3*natoms)-6) + 1:
+               tmp=line.split()
+               frequencies.append(tmp[0])
+            nline = nline + 1
+
+    nline=0
+    with open(sys.argv[1], 'r') as searchfile:
+        for line in searchfile:
+          #
+          # Read the displacements.
+          #
+          if int(linefreqstart) < int(nline) < int(linefreqend)-natoms :
+            if((str(round(float(frequencies[select-1]),3)) in line) == True):
+                searchfile.readline()
+                for i in range(0,natoms):
+                   tmp=(searchfile.readline().split())
+                   number=select
+                   for k in range(0,len(frequencies)):
+                       if(number-3 == 0) or (number-3 < 0):
+                          break
+                       else:
+                          number=number-3
+                   if number==1:
+                     dx.append(tmp[1])
+                     dy.append(tmp[2])
+                     dz.append(tmp[3])
+                   if number==2:
+                     dx.append(tmp[4])
+                     dy.append(tmp[5])
+                     dz.append(tmp[6])
+                   if number==3:
+                     dx.append(tmp[7])
+                     dy.append(tmp[8])
+                     dz.append(tmp[9])
+
+          nline = nline + 1
+
+    nline=0
+    with open(sys.argv[1], 'r') as searchfile:
+        for line in searchfile:
+            #
+            # Read optimized geometry.
+            #
+            if int(geo) < int(nline) < int(geo+1) + int(natoms):
+                tmp = line.split()
+                name.append(tmp[0].replace("."," ").split()[1])
+                x.append(tmp[1])
+                y.append(tmp[2])
+                z.append(tmp[3])
+            nline = nline + 1
+
+
 #
 # Initialization of Variables.
 #
@@ -126,12 +236,21 @@ col_neg=[]
 #
 disp=float(sys.argv[2])
 select=int(sys.argv[3])
+soft=str(sys.argv[4])
 
 #
 # Execute the function to obtain the optimized geometry and frequencies from
 # the gaussian output.
 #
-Gaussian()
+
+if soft == 'ADF':
+    ADF()
+if soft == 'G16':
+    G16()
+if soft == 'ADFmov':
+    print('not implemented yet')
+if soft == 'G16mov':
+    print('not implemented yet')
 
 #
 # Print the displaced geometry in the screen.
