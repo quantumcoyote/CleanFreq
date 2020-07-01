@@ -245,15 +245,44 @@ soft=str(sys.argv[4])
 
 if soft == 'ADF':
     ADF()
+    #
+    # Print the displaced geometry in the screen.
+    #
+    for i in range(0, len(name), 1):
+        print(str(name[i]) + ' ' + str(float(x[i]) + (disp * float(dx[i]))) + ' ' + str(
+            float(y[i]) + (disp * float(dy[i]))) + ' ' + str(float(z[i]) + (disp * float(dz[i]))))
+
 if soft == 'G16':
     G16()
-if soft == 'ADFmov':
-    print('not implemented yet')
-if soft == 'G16mov':
-    print('not implemented yet')
+    #
+    # Print the displaced geometry in the screen.
+    #
+    for i in range(0, len(name), 1):
+        print(str(name[i]) + ' ' + str(float(x[i]) + (disp * float(dx[i]))) + ' ' + str(
+            float(y[i]) + (disp * float(dy[i]))) + ' ' + str(float(z[i]) + (disp * float(dz[i]))))
 
-#
-# Print the displaced geometry in the screen.
-#
-for i in range(0,len(name),1):
-    print(str(name[i])+' '+str(float(x[i])+(disp*float(dx[i])))+' '+str(float(y[i])+(disp*float(dy[i])))+' '+str(float(z[i])+(disp*float(dz[i]))))
+if soft == 'ADFmov':
+    ADF()
+    for j in range(-10,10,1):
+      #
+      # Print the displaced geometry in the screen.
+      #
+      print(natoms)
+      print('')
+      for i in range(0, len(name), 1):
+        print(str(name[i]) + ' ' + str(float(x[i]) + ( (float(j)/10) * disp * float(dx[i]))) + ' ' + str(
+            float(y[i]) + ((float(j)/10) * disp * float(dy[i]))) + ' ' + str(float(z[i]) + ( (float(j)/10) *disp * float(dz[i]))))
+
+
+if soft == 'G16mov':
+    G16()
+    for j in range(-10,10,1):
+      #
+      # Print the displaced geometry in the screen.
+      #
+      print(natoms)
+      print('')
+      for i in range(0, len(name), 1):
+        print(str(name[i]) + ' ' + str(float(x[i]) + ( (float(j)/10) * disp * float(dx[i]))) + ' ' + str(
+            float(y[i]) + ((float(j)/10) * disp * float(dy[i]))) + ' ' + str(float(z[i]) + ( (float(j)/10) *disp * float(dz[i]))))
+
